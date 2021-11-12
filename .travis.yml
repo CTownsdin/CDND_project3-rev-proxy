@@ -9,8 +9,32 @@ install:
 before_script:
   - echo "no tests"
 
+###################################
+# Building the "hello" services
+###################################
 script:
-  - docker --version # print the version for logging
+  - docker --version # print the version for logging once
+  - echo "building hello feed"
+  - docker build -t hello-feed ./hello-svc-deploys/hello-feed
+  - docker tag hello-feed ctownsdin/hello-feed:latest
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push ctownsdin/hello-feed
+
+script:
+  - echo "building hello user"
+  - docker build -t hello-user ./hello-svc-deploys/hello-user
+  - docker tag hello-user ctownsdin/hello-user:latest
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push ctownsdin/hello-user
+
+###################################
+# Building the "reverse proxy (nginx)" service
+###################################
+script:
   - docker build -t simple-reverse-proxy .
   - docker tag simple-reverse-proxy ctownsdin/simple-reverse-proxy:latest
 
