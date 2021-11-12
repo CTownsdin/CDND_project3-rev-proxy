@@ -1,0 +1,29 @@
+services:
+  - docker
+
+# Pre-testing installs
+install:
+  - echo "nothing needs to be installed"
+
+# Scripts to be run such as tests
+before_script:
+  - echo "no tests"
+
+script:
+  - docker --version # print the version for logging
+  - echo "building hello feed"
+  - docker build -t hello-feed ./hello-svc-deploys/hello-feed
+  - docker tag hello-feed ctownsdin/hello-feed:latest
+  - echo "building hello user"
+  - docker build -t hello-user ./hello-svc-deploys/hello-user
+  - docker tag hello-user ctownsdin/hello-user:latest
+  - docker build -t simple-reverse-proxy .
+  - docker tag simple-reverse-proxy ctownsdin/simple-reverse-proxy:latest
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push ctownsdin/hello-feed
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push ctownsdin/hello-user
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push ctownsdin/simple-reverse-proxy
